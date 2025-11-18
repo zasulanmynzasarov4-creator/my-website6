@@ -1,0 +1,64 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <title>Ученик — Рефлексия урока</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+</head>
+<body>
+
+<h2>Оставьте отзыв</h2>
+
+<div id="lesson-box"></div>
+
+Имя:<br>
+<input id="name"><br><br>
+
+Отзыв:<br>
+<textarea id="feedback"></textarea><br><br>
+
+<button onclick="sendFeedback()">Отправить</button>
+
+<h3>Отзывы учеников:</h3>
+<div id="reviews"></div>
+
+<script>
+const API_URL = "https://script.google.com/macros/s/AKfycbzYHZjt4B3_GCgx61MAiJ6S-W0jZIkAXVtMxSF_nsksd29JcuSpwBFrEwlyTbEcyztW/exec";
+
+const url = new URLSearchParams(window.location.search);
+const lesson = url.get("lesson");
+const email = url.get("email");
+
+document.getElementById("lesson-box").innerHTML =
+  "<b>Тема урока:</b> " + lesson + "<br><b>Учитель:</b> " + email;
+
+function sendFeedback() {
+  const name = document.getElementById("name").value;
+  const feedback = document.getElementById("feedback").value;
+  const time = new Date().toLocaleString();
+
+  fetch(API_URL, {
+    method: "POST",
+    body: JSON.stringify({ lesson, name, feedback, time })
+  });
+
+  document.getElementById("feedback").value = "";
+}
+
+function loadReviews() {
+  fetch(`${API_URL}?lesson=${encodeURIComponent(lesson)}`)
+    .then(r => r.json())
+    .then(data => {
+      let box = document.getElementById("reviews");
+      box.innerHTML = "";
+      data.forEach(d => {
+        box.innerHTML += `<p><b>${d.name}</b>: ${d.feedback} — ${d.time}</p>`;
+      });
+    });
+}
+
+setInterval(loadReviews, 3000);
+</script>
+
+</body>
+</html>

@@ -1,0 +1,58 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <title>Учитель — Рефлексия урока</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/emailjs-com@3/dist/email.min.js"></script>
+</head>
+<body>
+  <h2>Страница учителя</h2>
+
+  Тема урока:<br>
+  <input id="lesson"><br><br>
+
+  Ваша почта:<br>
+  <input id="email"><br><br>
+
+  <button onclick="generateQR()">Создать QR</button>
+
+  <div id="qrcode"></div>
+
+  <h3>Отзывы:</h3>
+  <div id="reviews"></div>
+
+<script>
+emailjs.init("YOUR_PUBLIC_KEY");
+
+const API_URL = "https://script.google.com/macros/s/AKfycbzYHZjt4B3_GCgx61MAiJ6S-W0jZIkAXVtMxSF_nsksd29JcuSpwBFrEwlyTbEcyztW/exec";
+let lessonName = "";
+
+function generateQR() {
+  const lesson = document.getElementById("lesson").value;
+  const email = document.getElementById("email").value;
+  lessonName = lesson;
+
+  const link = `student.html?lesson=${encodeURIComponent(lesson)}&email=${email}`;
+  document.getElementById("qrcode").innerHTML = "";
+  new QRCode(document.getElementById("qrcode"), link);
+}
+
+function loadReviews() {
+  if (!lessonName) return;
+  fetch(`${API_URL}?lesson=${encodeURIComponent(lessonName)}`)
+    .then(r => r.json())
+    .then(data => {
+      let box = document.getElementById("reviews");
+      box.innerHTML = "";
+      data.forEach(d => {
+        box.innerHTML += `<p><b>${d.name}</b>: ${d.feedback} — ${d.time}</p>`;
+      });
+    });
+}
+
+setInterval(loadReviews, 3000);
+</script>
+</body>
+</html>
